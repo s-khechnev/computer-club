@@ -8,23 +8,25 @@
 
 class Table {
  public:
+  using time_point =
+      std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
+
   Table(unsigned pricePerHour) : pricePerHour(pricePerHour) {}
 
-  void occupy(std::chrono::minutes time) {
+  void occupy(time_point time) {
     assert(!isBusy);
 
     isBusy = true;
     startUsage = time;
   }
 
-  void release(std::chrono::minutes time) {
+  void release(time_point time) {
     assert(isBusy);
 
     isBusy = false;
     auto usage = time - startUsage;
     profit += calculateProfit(usage, pricePerHour);
     totalUsage += usage;
-    startUsage = std::chrono::minutes{0};
   }
 
   bool busy() const { return isBusy; }
@@ -36,7 +38,7 @@ class Table {
   unsigned profit = 0;
   bool isBusy = false;
   std::chrono::minutes totalUsage{0};
-  std::chrono::minutes startUsage{0};
+  time_point startUsage;
 };
 
 #endif  // TABLE_HPP_

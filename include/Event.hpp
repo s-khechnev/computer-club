@@ -6,6 +6,9 @@
 
 namespace event {
 
+using time_point =
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
+
 class Base {
  public:
   enum class Id {
@@ -18,15 +21,15 @@ class Base {
     Error = 13,
   };
 
-  std::chrono::minutes getTime() const { return time; }
+  time_point getTime() const { return time; }
   Id getId() const { return id; }
-
- protected:
-  Base(std::chrono::minutes time, Id id) : time(time), id(id) {}
   virtual ~Base() = default;
 
+ protected:
+  Base(time_point time, Id id) : time(time), id(id) {}
+
  private:
-  const std::chrono::minutes time;
+  const time_point time;
   const Id id;
 };
 
@@ -35,7 +38,7 @@ class BaseWithName : public Base {
   const std::string& getName() const { return name; }
 
  protected:
-  BaseWithName(std::chrono::minutes time, Id id, const std::string& name)
+  BaseWithName(time_point time, Id id, const std::string& name)
       : Base(time, id), name(name) {}
 
  private:
@@ -47,8 +50,8 @@ class BaseWithNameTableNum : public BaseWithName {
   unsigned getTableNum() const { return tableNum; }
 
  protected:
-  BaseWithNameTableNum(std::chrono::minutes time, Id id,
-                       const std::string& name, unsigned tableNum)
+  BaseWithNameTableNum(time_point time, Id id, const std::string& name,
+                       unsigned tableNum)
       : BaseWithName(time, id, name), tableNum(tableNum) {}
 
  private:
@@ -56,39 +59,38 @@ class BaseWithNameTableNum : public BaseWithName {
 };
 
 struct Come final : public BaseWithName {
-  Come(std::chrono::minutes time, const std::string& name)
+  Come(time_point time, const std::string& name)
       : BaseWithName(time, Id::Come, name) {}
 };
 
 struct Seat final : public BaseWithNameTableNum {
-  Seat(std::chrono::minutes time, const std::string& name, unsigned tableNum)
+  Seat(time_point time, const std::string& name, unsigned tableNum)
       : BaseWithNameTableNum(time, Id::Seat, name, tableNum) {}
 };
 
 struct Wait final : public BaseWithName {
-  Wait(std::chrono::minutes time, const std::string& name)
+  Wait(time_point time, const std::string& name)
       : BaseWithName(time, Id::Wait, name) {}
 };
 
 struct LeftByHimself final : public BaseWithName {
-  LeftByHimself(std::chrono::minutes time, const std::string& name)
+  LeftByHimself(time_point time, const std::string& name)
       : BaseWithName(time, Id::LeftByHimself, name) {}
 };
 
 struct Left final : public BaseWithName {
-  Left(std::chrono::minutes time, const std::string& name)
+  Left(time_point time, const std::string& name)
       : BaseWithName(time, Id::Left, name) {}
 };
 
 struct SeatAfterWait final : public BaseWithNameTableNum {
-  SeatAfterWait(std::chrono::minutes time, const std::string& name,
-                unsigned tableNum)
+  SeatAfterWait(time_point time, const std::string& name, unsigned tableNum)
       : BaseWithNameTableNum(time, Id::SeatAfterWait, name, tableNum) {}
 };
 
 class Error final : public Base {
  public:
-  Error(std::chrono::minutes time, const std::string& error)
+  Error(time_point time, const std::string& error)
       : Base(time, Id::Error), error(error) {}
 
   const std::string& getError() const { return error; }
