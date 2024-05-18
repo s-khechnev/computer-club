@@ -11,8 +11,6 @@
 
 namespace parser {
 
-using EventId = event::Base::Id;
-
 unsigned stoui(const std::string& str) {
   std::size_t idx;
   unsigned long result = std::stoul(str, &idx);
@@ -51,11 +49,11 @@ event::time_point parseTime(const std::string_view str) {
                            std::chrono::minutes{t.tm_min}};
 };
 
-EventId parseEventId(const std::string_view str) {
-  if (str == "1") return EventId::Come;
-  if (str == "2") return EventId::Seat;
-  if (str == "3") return EventId::Wait;
-  if (str == "4") return EventId::LeftByHimself;
+event::Id parseEventId(const std::string_view str) {
+  if (str == "1") return event::Id::Come;
+  if (str == "2") return event::Id::Seat;
+  if (str == "3") return event::Id::Wait;
+  if (str == "4") return event::Id::Left;
   throw std::runtime_error{"unknown event id"};
 }
 
@@ -104,28 +102,25 @@ std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
         throw std::runtime_error{"invalid client name"};
 
       switch (eventId) {
-        case EventId::Come: {
+        case event::Id::Come: {
           events.push_back(
               std::move(std::make_unique<event::Come>(time, clientName)));
           break;
         }
-        case EventId::Seat: {
+        case event::Id::Seat: {
           unsigned tableNum = parseNaturalNum(std::string{strs[3]});
           events.push_back(
               std::make_unique<event::Seat>(time, clientName, tableNum));
           break;
         }
-        case EventId::Wait: {
+        case event::Id::Wait: {
           events.push_back(std::make_unique<event::Wait>(time, clientName));
           break;
         }
-        case EventId::LeftByHimself: {
-          events.push_back(
-              std::make_unique<event::LeftByHimself>(time, clientName));
+        case event::Id::Left: {
+          events.push_back(std::make_unique<event::Left>(time, clientName));
           break;
         }
-        default:
-          throw std::runtime_error{"unknown event id"};
       }
     }
 
