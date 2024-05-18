@@ -31,25 +31,25 @@ class ComputerClub {
 
   bool isTableBusy(unsigned tableN) const { return tables[tableN].busy(); }
 
-  void addClient(const std::string& client) { clients[client] = 0; }
+  void addClient(const std::string& client) { clients[client].first = 0; }
 
   bool containsClient(const std::string& client) const {
     return clients.contains(client);
   }
 
   bool isClientPlaying(const std::string& client) const {
-    return (clients.find(client)->second) != 0;
+    return (clients.find(client)->second.first) != 0;
   }
 
   void removeClientAndInviteWaiting(const std::string& client,
                                     time_point time) {
+    auto clientIt = clients.find(client)->second;
     if (!isClientPlaying(client)) {
-      // fix me
-      queue.remove(client);
+      queue.erase(clientIt.second);
       return;
     }
 
-    unsigned tableN = clients.find(client)->second;
+    unsigned tableN = clientIt.first;
     releaseTable(client, tableN, time);
     clients.erase(client);
 
@@ -62,25 +62,25 @@ class ComputerClub {
 
   void clientGoWait(const std::string& client, time_point time) {
     if (isClientPlaying(client))
-      releaseTable(client, clients.find(client)->second, time);
+      releaseTable(client, clients.find(client)->second.first, time);
     enqueue(clients.find(client)->first);
   }
 
   void occupyTable(const std::string& client, unsigned tableN,
                    time_point time) {
     if (isClientPlaying(client))
-      releaseTable(client, clients.find(client)->second, time);
+      releaseTable(client, clients.find(client)->second.first, time);
 
     tables[tableN].occupy(time);
     auto clientIt = clients.find(client);
-    clientIt->second = tableN;
+    clientIt->second.first = tableN;
     --freeTables;
   }
 
   void releaseTable(const std::string& client, unsigned tableN,
                     time_point time) {
     tables[tableN].release(time);
-    clients[client] = 0;
+    clients[client].first = 0;
     ++freeTables;
   }
 
@@ -103,7 +103,14 @@ class ComputerClub {
  private:
   time_point openTime, closeTime;
 
-  std::unordered_map<std::string, unsigned> clients;
+  using clients_map = std::unordered_map<
+      std::string,
+      std::pair<unsigned,
+                std::list<std::string>::iterator>>;  // "client name"
+                                                     // ->
+                                                     // [queue::iterator,
+                                                     // tableNum]
+  clients_map clients;
   std::list<std::string> queue;
   std::vector<Table> tables;
   unsigned freeTables;
