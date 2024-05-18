@@ -97,12 +97,6 @@ class ComputerClub {
     }
   }
 
-  void close() {
-    for (auto& table : tables) {
-      if (table.busy()) table.release(closeTime);
-    }
-  }
-
  private:
   time_point openTime, closeTime;
 
