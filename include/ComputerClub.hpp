@@ -41,18 +41,21 @@ class ComputerClub {
     return (clients.find(client)->second.first) != 0;
   }
 
-  void removeClientAndInviteWaiting(const std::string& client,
-                                    time_point time) {
+  unsigned removeClient(const std::string& client, time_point time) {
     auto clientIt = clients.find(client)->second;
     if (!isClientPlaying(client)) {
       queue.erase(clientIt.second);
-      return;
+      return 0;
     }
 
     unsigned tableN = clientIt.first;
     releaseTable(client, tableN, time);
     clients.erase(client);
+    return tableN;
+  }
 
+  void inviteWaiting(const std::string& client, unsigned tableN,
+                     time_point time) {
     if (getQueueSize() == 0) return;
 
     std::string waiting = queue.front();

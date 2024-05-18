@@ -33,6 +33,7 @@ int main() {
     std::tie(club, events) = parser::parse("123.txt");
   } catch (const std::runtime_error& err) {
     std::cout << err.what() << "\n";
+    return 1;
   }
 
   printTime(club.getOpenTime());
@@ -88,8 +89,10 @@ int main() {
           continue;
         }
 
-        // split to two funcs
-        club.removeClientAndInviteWaiting(event->getName(), event->getTime());
+        unsigned tableN = club.removeClient(event->getName(), event->getTime());
+        if (tableN != 0)
+          club.inviteWaiting(event->getName(), tableN, event->getTime());
+
         // 12
 
         continue;
