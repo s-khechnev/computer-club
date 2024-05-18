@@ -2,8 +2,10 @@
 #define COMPUTERCLUB_HPP_
 
 #include <chrono>
+#include <functional>
 #include <iostream>
 #include <list>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -56,8 +58,6 @@ class ComputerClub {
 
   void inviteWaiting(const std::string& client, unsigned tableN,
                      time_point time) {
-    if (getQueueSize() == 0) return;
-
     std::string waiting = queue.front();
     occupyTable(waiting, tableN, time);
     queue.pop_front();
@@ -89,12 +89,22 @@ class ComputerClub {
 
   void enqueue(const std::string& client) { queue.push_back(client); }
 
-  void printStat() {
-    int i = 1;
-    for (auto it = ++tables.begin(), end = tables.end(); it != end; ++it, ++i) {
-      std::cout << i << " " << it->getProfit() << " "
-                << it->getTotalUsage().count() << "\n";
+  void printStatistics() {
+    int i = 0;
+    for (auto it = ++tables.begin(), end = tables.end(); it != end; ++it) {
+      std::cout << ++i << " " << it->getProfit() << " "
+                << minutesToStr(it->getTotalUsage()) << "\n";
     }
+  }
+
+  std::vector<std::pair<std::reference_wrapper<const std::string>, unsigned>>
+  getClients() {
+    std::vector<std::pair<std::reference_wrapper<const std::string>, unsigned>>
+        result;
+    result.reserve(clients.size());
+    for (auto& [client, info] : clients)
+      result.push_back({std::cref(client), info.first});
+    return result;
   }
 
  private:
@@ -105,8 +115,8 @@ class ComputerClub {
       std::pair<unsigned,
                 std::list<std::string>::iterator>>;  // "client name"
                                                      // ->
-                                                     // [queue::iterator,
-                                                     // tableNum]
+                                                     // [tableNum,
+                                                     // queue::iterator]
   clients_map clients;
   std::list<std::string> queue;
   std::vector<Table> tables;

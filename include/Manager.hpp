@@ -1,7 +1,9 @@
 #ifndef MANAGER_HPP_
 #define MANAGER_HPP_
 
+#include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ComputerClub.hpp"
@@ -13,30 +15,46 @@ class Manager {
   Manager(ComputerClub club) : club(club) {}
 
   void processEvents(const std::vector<std::unique_ptr<event::Base>>& events) {
-    std::cout << timeToStr(club.getOpenTime());
+    std::cout << timeToStr(club.getOpenTime()) << "\n";
 
     for (auto& e : events) {
       switch (e->getId()) {
         case event::Id::Come:
-          handleEvent(static_cast<event::Come&>(*e));
+          handleEvent(dynamic_cast<event::Come&>(*e));
           break;
         case event::Id::Seat:
-          handleEvent(static_cast<event::Seat&>(*e));
+          handleEvent(dynamic_cast<event::Seat&>(*e));
           break;
         case event::Id::Wait:
-          handleEvent(static_cast<event::Wait&>(*e));
+          handleEvent(dynamic_cast<event::Wait&>(*e));
           break;
         case event::Id::Left:
-          handleEvent(static_cast<event::Left&>(*e));
+          handleEvent(dynamic_cast<event::Left&>(*e));
           break;
       }
     }
-
-    std::cout << timeToStr(club.getCloseTime());
   }
+
+  void closeClub() {
+    auto clients = club.getClients();
+    std::sort(clients.begin(), clients.end(),
+              [](auto x, auto y) { return x.first.get() < y.first.get(); });
+    for (auto& [client, tableN] : clients) {
+      if (club.isClientPlaying(client)) {
+        club.releaseTable(client, tableN, club.getCloseTime());
+        printClientLeft(club.getCloseTime(), client);
+      }
+    }
+
+    std::cout << timeToStr(club.getCloseTime()) << "\n";
+  }
+
+  void printStatistics() { club.printStatistics(); }
 
  private:
   void handleEvent(event::Come& event) {
+    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
+              << event.getName() << "\n";
     if (club.containsClient(event.getName())) {
       printError(event.getTime(), "YouShallNotPass");
       return;
@@ -50,6 +68,8 @@ class Manager {
   }
 
   void handleEvent(event::Seat& event) {
+    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
+              << event.getName() << " " << event.getTableNum() << "\n";
     if (club.isTableBusy(event.getTableNum())) {
       printError(event.getTime(), "PlaceIsBusy");
       return;
@@ -64,12 +84,14 @@ class Manager {
   }
 
   void handleEvent(event::Wait& event) {
+    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
+              << event.getName() << "\n";
     if (club.getFreeTables() > 0) {
       printError(event.getTime(), "ICanWaitNoLonger!");
       return;
     }
     if (club.getQueueSize() > club.getTableNum()) {
-      std::cout << "I go home 11 \n";
+      printClientLeft(event.getTime(), event.getName());
       return;
     }
 
@@ -78,22 +100,37 @@ class Manager {
   }
 
   void handleEvent(event::Left& event) {
+    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
+              << event.getName() << "\n";
     if (!club.containsClient(event.getName())) {
       printError(event.getTime(), "ClientUnknown");
       return;
     }
 
     unsigned tableN = club.removeClient(event.getName(), event.getTime());
-    if (tableN != 0)
+    if (tableN != 0 && club.getQueueSize() != 0) {
       club.inviteWaiting(event.getName(), tableN, event.getTime());
-
-    // 12
+      printClientSitDown(event.getTime(), event.getName(), tableN);
+    }
 
     return;
   }
 
+  void printClientLeft(event::time_point time, const std::string& name) {
+    constexpr int outId = 11;
+    std::cout << timeToStr(time) << " " << outId << " " << name << "\n";
+  }
+
+  void printClientSitDown(event::time_point time, const std::string& name,
+                          unsigned tableN) {
+    constexpr int outId = 12;
+    std::cout << timeToStr(time) << " " << outId << " " << name << " " << tableN
+              << "\n";
+  }
+
   void printError(event::time_point time, std::string error) {
-    std::cout << timeToStr(time) << " " << 13 << " " << error << "\n";
+    constexpr int outId = 13;
+    std::cout << timeToStr(time) << " " << outId << " " << error << "\n";
   }
 
  private:

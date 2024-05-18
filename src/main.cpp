@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   Manager manager{std::move(club)};
   manager.processEvents(events);
   manager.closeClub();
-  manager.printStats();
+  manager.printStatistics();
 
   return 0;
 }

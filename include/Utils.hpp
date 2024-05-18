@@ -23,4 +23,15 @@ std::string timeToStr(event::time_point time) {
   return ss.str();
 }
 
+std::string minutesToStr(std::chrono::minutes minutes) {
+  using namespace std::chrono;
+  using namespace std::chrono_literals;
+  auto h = duration_cast<hours>(minutes);
+  auto m = duration_cast<std::chrono::minutes>(minutes % 1h);
+  std::ostringstream oss;
+  oss << std::setw(2) << std::setfill('0') << h.count() << ":" << std::setw(2)
+      << std::setfill('0') << m.count();
+  return oss.str();
+}
+
 #endif  // UTILS_HPP_
