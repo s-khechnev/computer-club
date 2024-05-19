@@ -1,0 +1,47 @@
+09:00
+08:00 1 client1
+08:00 13 NotOpenYet
+09:01 1 client1
+09:01 1 client1
+09:01 13 YouShallNotPass
+09:02 3 client1
+09:02 13 ICanWaitNoLonger!
+09:03 4 client1
+09:05 1 client1
+09:06 2 client1 1
+09:07 2 client1 2
+09:08 1 client2
+09:09 2 client2 2
+09:09 13 PlaceIsBusy
+09:10 3 client2
+09:10 13 ICanWaitNoLonger!
+09:11 2 client2 1
+09:12 1 client3
+09:13 1 client4
+09:14 1 client5
+09:15 1 client6
+09:16 1 client7
+09:17 3 client3
+09:18 3 client4
+09:19 3 client5
+09:20 3 client6
+09:20 11 client6
+09:20 3 client7
+09:20 11 client7
+09:21 2 client1 2
+09:21 13 PlaceIsBusy
+09:22 2 client1 1
+09:22 13 PlaceIsBusy
+09:23 4 client1
+09:23 12 client3 2
+09:24 4 client2
+09:24 12 client4 1
+09:25 4 client3
+09:25 12 client5 2
+09:26 4 client4
+09:27 4 client5
+18:00 11 client6
+18:00 11 client7
+18:00
+1 30 00:16
+2 30 00:20
