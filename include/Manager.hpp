@@ -12,7 +12,7 @@
 
 class Manager {
  public:
-  Manager(ComputerClub club) : club(club) {}
+  Manager(ComputerClub club) : club(std::move(club)) {}
 
   void processEvents(const std::vector<std::unique_ptr<event::Base>>& events) {
     std::cout << timeToStr(club.getOpenTime()) << "\n";
@@ -38,10 +38,9 @@ class Manager {
   void closeClub() {
     auto clients = club.getClients();
     std::sort(clients.begin(), clients.end(),
-              [](auto x, auto y) { return x.first.get() < y.first.get(); });
-    for (const auto& [client, tableN] : clients) {
-      if (club.isClientPlaying(client))
-        club.releaseTable(client, tableN, club.getCloseTime());
+              [](auto x, auto y) { return x.get() < y.get(); });
+    for (const auto& client : clients) {
+      club.releaseTable(client, club.getCloseTime());
       printClientLeft(client, club.getCloseTime());
     }
 
@@ -103,12 +102,12 @@ class Manager {
       return;
     }
 
-    auto tableN = club.removeClient(event.getName(), event.getTime());
-    if (!tableN) return;
+    auto freeTableN = club.removeClient(event.getName(), event.getTime());
+    if (!freeTableN) return;
 
-    if (auto waitingClient =
-            club.occupyTableFromQueue(*tableN, event.getTime()))
-      printClientSitDown(*waitingClient, *tableN, event.getTime());
+    if (auto takingTbl =
+            club.occupyTableFromQueue(*freeTableN, event.getTime()))
+      printClientSitDown(*takingTbl, *freeTableN, event.getTime());
   }
 
   void printClientLeft(const std::string& name, event::time_point time) {

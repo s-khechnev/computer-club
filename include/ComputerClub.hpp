@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Table.hpp"
+#include "Utils.hpp"
 
 class ComputerClub {
  public:
@@ -40,14 +41,6 @@ class ComputerClub {
     return clients.contains(client);
   }
 
-  bool isClientPlaying(const std::string& client) const {
-    return clients.find(client)->second.first.has_value();
-  }
-
-  std::optional<unsigned> getTableNumByName(const std::string& client) const {
-    return clients.find(client)->second.first;
-  }
-
   std::optional<unsigned> removeClient(const std::string& client,
                                        time_point time) {
     const auto& [tableN, queueIt] = clients.find(client)->second;
@@ -74,19 +67,22 @@ class ComputerClub {
   }
 
   void clientGoWait(const std::string& client, time_point time) {
-    if (isClientPlaying(client))
-      releaseTable(client, *getTableNumByName(client), time);
+    releaseTable(client, time);
     enqueue(client);
   }
 
   void occupyTable(const std::string& client, unsigned tableN,
                    time_point time) {
-    if (isClientPlaying(client))
-      releaseTable(client, *getTableNumByName(client), time);
+    releaseTable(client, time);
 
     tables[tableN].occupy(time);
     clients[client].first = tableN;
     --freeTables;
+  }
+
+  void releaseTable(const std::string& client, time_point time) {
+    if (auto tableN = clients.find(client)->second.first)
+      releaseTable(client, *tableN, time);
   }
 
   void releaseTable(const std::string& client, unsigned tableN,
@@ -107,12 +103,10 @@ class ComputerClub {
   }
 
   auto getClients() {
-    std::vector<std::pair<std::reference_wrapper<const std::string>,
-                          unsigned>>
-        result;  // [name, tableN]
+    std::vector<std::reference_wrapper<const std::string>> result;
     result.reserve(clients.size());
-    for (const auto& [client, info] : clients)
-      result.emplace_back(std::cref(client), *info.first);
+    for (const auto& [client, _] : clients)
+      result.emplace_back(std::cref(client));
 
     return result;
   }
