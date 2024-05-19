@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+#include "Utils.hpp"
+
 namespace event {
 
 using time_point =
@@ -36,6 +38,10 @@ class Base {
   const std::string& getName() const { return name; }
 
   virtual ~Base() = default;
+  friend std::ostream& operator<<(std::ostream& os, const Base& p);
+  virtual void dump(std::ostream& os) const {
+    os << timeToStr(getTime()) << " " << getId() << " " << getName();
+  }
 
  protected:
   Base(time_point time, Id id, std::string name)
@@ -50,6 +56,11 @@ class Base {
 class BaseWithTableNum : public Base {
  public:
   unsigned getTableNum() const { return tableNum; }
+
+  void dump(std::ostream& os) const override {
+    os << timeToStr(getTime()) << " " << getId() << " " << getName() << " "
+       << getTableNum();
+  }
 
  protected:
   BaseWithTableNum(time_point time, Id id, std::string name, unsigned tableNum)
@@ -78,6 +89,11 @@ struct Left final : public Base {
   Left(time_point time, std::string name)
       : Base(time, Id::Left, std::move(name)) {}
 };
+
+std::ostream& operator<<(std::ostream& os, const Base& b) {
+  b.dump(os);
+  return os;
+}
 
 }  // namespace event
 

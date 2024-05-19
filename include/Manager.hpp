@@ -53,8 +53,7 @@ class Manager {
 
  private:
   void handleEvent(event::Come& event) {
-    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
-              << event.getName() << "\n";
+    std::cout << event << "\n";
     if (club.containsClient(event.getName())) {
       printError(event.getTime(), "YouShallNotPass");
       return;
@@ -68,8 +67,7 @@ class Manager {
   }
 
   void handleEvent(event::Sit& event) {
-    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
-              << event.getName() << " " << event.getTableNum() << "\n";
+    std::cout << event << "\n";
     if (club.isTableBusy(event.getTableNum())) {
       printError(event.getTime(), "PlaceIsBusy");
       return;
@@ -84,8 +82,7 @@ class Manager {
   }
 
   void handleEvent(event::Wait& event) {
-    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
-              << event.getName() << "\n";
+    std::cout << event << "\n";
     if (club.getFreeTables() > 0) {
       printError(event.getTime(), "ICanWaitNoLonger!");
       return;
@@ -100,8 +97,7 @@ class Manager {
   }
 
   void handleEvent(event::Left& event) {
-    std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
-              << event.getName() << "\n";
+    std::cout << event << "\n";
     if (!club.containsClient(event.getName())) {
       printError(event.getTime(), "ClientUnknown");
       return;
@@ -112,8 +108,6 @@ class Manager {
       club.inviteWaiting(event.getName(), tableN, event.getTime());
       printClientSitDown(event.getTime(), event.getName(), tableN);
     }
-
-    return;
   }
 
   void printClientLeft(event::time_point time, const std::string& name) {

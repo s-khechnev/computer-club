@@ -5,7 +5,8 @@
 #include <iomanip>
 #include <string>
 
-#include "Event.hpp"
+using time_point =
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
 
 unsigned calculateProfit(std::chrono::minutes usage, unsigned pricePerHour) {
   auto hoursUsed =
@@ -13,7 +14,7 @@ unsigned calculateProfit(std::chrono::minutes usage, unsigned pricePerHour) {
   return (hoursUsed + 1) * pricePerHour;  // +1 to up rounding
 }
 
-std::string timeToStr(event::time_point time) {
+std::string timeToStr(time_point time) {
   using namespace std::chrono;
   std::time_t timeT = system_clock::to_time_t(time);
   std::tm tm = *std::gmtime(&timeT);
