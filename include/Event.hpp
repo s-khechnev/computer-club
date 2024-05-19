@@ -38,7 +38,7 @@ class Base {
   const std::string& getName() const { return name; }
 
   virtual ~Base() = default;
-  friend std::ostream& operator<<(std::ostream& os, const Base& p);
+
   virtual void dump(std::ostream& os) const {
     os << timeToStr(getTime()) << " " << getId() << " " << getName();
   }

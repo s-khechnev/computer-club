@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -23,7 +24,7 @@ class ComputerClub {
         tables(tableNum + 1, Table{pricePerHour}),
         freeTables(tableNum) {}
 
-  std::size_t getNumTables() const { return tables.size(); }
+  std::size_t getNumTables() const { return tables.size() - 1; }
   time_point getOpenTime() const { return openTime; }
   time_point getCloseTime() const { return closeTime; }
   std::size_t getFreeTables() const { return freeTables; }
@@ -31,57 +32,65 @@ class ComputerClub {
 
   bool isTableBusy(unsigned tableN) const { return tables[tableN].busy(); }
 
-  void addClient(const std::string& client) { clients[client].first = 0; }
+  void addClient(const std::string& client) { clients[client] = {}; }
 
   bool containsClient(const std::string& client) const {
     return clients.contains(client);
   }
 
   bool isClientPlaying(const std::string& client) const {
-    return (clients.find(client)->second.first) != 0;
+    return clients.find(client)->second.first.has_value();
   }
 
-  unsigned removeClient(const std::string& client, time_point time) {
-    auto clientIt = clients.find(client)->second;
-    if (!isClientPlaying(client)) {
-      queue.erase(clientIt.second);
-      return 0;
+  std::optional<unsigned> getTableNumByName(const std::string& client) const {
+    return clients.find(client)->second.first;
+  }
+
+  std::optional<unsigned> removeClient(const std::string& client,
+                                       time_point time) {
+    const auto& [tableN, queueIt] = clients.find(client)->second;
+    if (!tableN) {
+      queue.erase(queueIt);
+      clients.erase(client);
+      return {};
     }
 
-    unsigned tableN = clientIt.first;
-    releaseTable(client, tableN, time);
+    unsigned tableNum = *tableN;
+    releaseTable(client, tableNum, time);
     clients.erase(client);
-    return tableN;
+    return tableNum;
   }
 
-  void inviteWaiting(const std::string& client, unsigned tableN,
-                     time_point time) {
-    std::string waiting = queue.front();
+  std::optional<std::string> occupyTableFromQueue(unsigned tableN,
+                                                  time_point time) {
+    if (!getQueueSize()) return {};
+
+    std::string& waiting = queue.front();
     occupyTable(waiting, tableN, time);
     queue.pop_front();
+    return waiting;
   }
 
   void clientGoWait(const std::string& client, time_point time) {
     if (isClientPlaying(client))
-      releaseTable(client, clients.find(client)->second.first, time);
-    enqueue(clients.find(client)->first);
+      releaseTable(client, *getTableNumByName(client), time);
+    enqueue(client);
   }
 
   void occupyTable(const std::string& client, unsigned tableN,
                    time_point time) {
     if (isClientPlaying(client))
-      releaseTable(client, clients.find(client)->second.first, time);
+      releaseTable(client, *getTableNumByName(client), time);
 
     tables[tableN].occupy(time);
-    auto clientIt = clients.find(client);
-    clientIt->second.first = tableN;
+    clients[client].first = tableN;
     --freeTables;
   }
 
   void releaseTable(const std::string& client, unsigned tableN,
                     time_point time) {
     tables[tableN].release(time);
-    clients[client].first = 0;
+    clients[client].first = {};
     ++freeTables;
   }
 
@@ -95,13 +104,14 @@ class ComputerClub {
     }
   }
 
-  std::vector<std::pair<std::reference_wrapper<const std::string>, unsigned>>
-  getClients() {
-    std::vector<std::pair<std::reference_wrapper<const std::string>, unsigned>>
-        result;
-    result.reserve(clients.size());
-    for (auto& [client, info] : clients)
-      result.push_back({std::cref(client), info.first});
+  auto getPlayingClients() {
+    std::vector<std::pair<std::reference_wrapper<const std::string>,
+                          unsigned>>
+        result;  // [name, tableN]
+    result.reserve(getNumTables() - freeTables);
+    for (const auto& [client, info] : clients)
+      if (info.first) result.emplace_back(std::cref(client), *info.first);
+
     return result;
   }
 
@@ -110,14 +120,14 @@ class ComputerClub {
 
   using client_map = std::unordered_map<
       std::string,
-      std::pair<unsigned,
+      std::pair<std::optional<unsigned>,
                 std::list<std::string>::iterator>>;  // "client name"
                                                      // ->
                                                      // [tableNum,
                                                      // queue::iterator]
   client_map clients;
   std::list<std::string> queue;
-  std::vector<Table> tables;
+  std::vector<Table> tables;  // 0's table is dummy
   unsigned freeTables;
 };
 

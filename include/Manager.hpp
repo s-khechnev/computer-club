@@ -20,30 +20,28 @@ class Manager {
     for (auto& e : events) {
       switch (e->getId()) {
         case event::Id::Come:
-          handleEvent(dynamic_cast<event::Come&>(*e));
+          handleEvent(static_cast<event::Come&>(*e));
           break;
         case event::Id::Sit:
-          handleEvent(dynamic_cast<event::Sit&>(*e));
+          handleEvent(static_cast<event::Sit&>(*e));
           break;
         case event::Id::Wait:
-          handleEvent(dynamic_cast<event::Wait&>(*e));
+          handleEvent(static_cast<event::Wait&>(*e));
           break;
         case event::Id::Left:
-          handleEvent(dynamic_cast<event::Left&>(*e));
+          handleEvent(static_cast<event::Left&>(*e));
           break;
       }
     }
   }
 
   void closeClub() {
-    auto clients = club.getClients();
-    std::sort(clients.begin(), clients.end(),
+    auto playingClients = club.getPlayingClients();
+    std::sort(playingClients.begin(), playingClients.end(),
               [](auto x, auto y) { return x.first.get() < y.first.get(); });
-    for (auto& [client, tableN] : clients) {
-      if (club.isClientPlaying(client)) {
-        club.releaseTable(client, tableN, club.getCloseTime());
-        printClientLeft(client, club.getCloseTime());
-      }
+    for (const auto& [client, tableN] : playingClients) {
+      club.releaseTable(client, tableN, club.getCloseTime());
+      printClientLeft(client, club.getCloseTime());
     }
 
     std::cout << timeToStr(club.getCloseTime()) << "\n";
@@ -103,11 +101,12 @@ class Manager {
       return;
     }
 
-    unsigned tableN = club.removeClient(event.getName(), event.getTime());
-    if (tableN != 0 && club.getQueueSize() != 0) {
-      club.inviteWaiting(event.getName(), tableN, event.getTime());
-      printClientSitDown(event.getName(), tableN, event.getTime());
-    }
+    auto tableN = club.removeClient(event.getName(), event.getTime());
+    if (!tableN) return;
+
+    if (auto waitingClient =
+            club.occupyTableFromQueue(*tableN, event.getTime()))
+      printClientSitDown(*waitingClient, *tableN, event.getTime());
   }
 
   void printClientLeft(const std::string& name, event::time_point time) {
