@@ -67,7 +67,7 @@ class ComputerClub {
                                                   time_point time) {
     if (!getQueueSize()) return {};
 
-    std::string& waiting = queue.front();
+    std::string waiting = std::move(queue.front());
     occupyTable(waiting, tableN, time);
     queue.pop_front();
     return waiting;
