@@ -106,13 +106,13 @@ class ComputerClub {
     }
   }
 
-  auto getPlayingClients() {
+  auto getClients() {
     std::vector<std::pair<std::reference_wrapper<const std::string>,
                           unsigned>>
         result;  // [name, tableN]
-    result.reserve(getNumTables() - freeTables);
+    result.reserve(clients.size());
     for (const auto& [client, info] : clients)
-      if (info.first) result.emplace_back(std::cref(client), *info.first);
+      result.emplace_back(std::cref(client), *info.first);
 
     return result;
   }

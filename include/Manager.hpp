@@ -36,11 +36,12 @@ class Manager {
   }
 
   void closeClub() {
-    auto playingClients = club.getPlayingClients();
-    std::sort(playingClients.begin(), playingClients.end(),
+    auto clients = club.getClients();
+    std::sort(clients.begin(), clients.end(),
               [](auto x, auto y) { return x.first.get() < y.first.get(); });
-    for (const auto& [client, tableN] : playingClients) {
-      club.releaseTable(client, tableN, club.getCloseTime());
+    for (const auto& [client, tableN] : clients) {
+      if (club.isClientPlaying(client))
+        club.releaseTable(client, tableN, club.getCloseTime());
       printClientLeft(client, club.getCloseTime());
     }
 
