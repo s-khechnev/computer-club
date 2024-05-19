@@ -119,19 +119,19 @@ std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
     std::getline(istream, line);
     pricePerHour = parsePositiveNum(line);
 
-    std::getline(istream, line);
-    auto event = parseEvent(line);
-    auto prevTimePoint = event->getTime();
-    events.push_back(std::move(event));
-    while (std::getline(istream, line)) {
+    if (std::getline(istream, line)) {
       auto event = parseEvent(line);
-      if (event->getTime() < prevTimePoint)
-        throw std::runtime_error{"invalid event's order"};
-      prevTimePoint = event->getTime();
-
+      auto prevTimePoint = event->getTime();
       events.push_back(std::move(event));
-    }
+      while (std::getline(istream, line)) {
+        auto event = parseEvent(line);
+        if (event->getTime() < prevTimePoint)
+          throw std::runtime_error{"invalid event's order"};
+        prevTimePoint = event->getTime();
 
+        events.push_back(std::move(event));
+      }
+    }
   } catch (const std::exception&) {
     throw std::runtime_error{line};
   }
