@@ -32,7 +32,9 @@ class ComputerClub {
 
   bool isTableBusy(unsigned tableN) const { return tables[tableN].busy(); }
 
-  void addClient(const std::string& client) { clients[client] = {}; }
+  void addClient(const std::string& client) {
+    clients[client] = {{}, queue.end()};
+  }
 
   bool containsClient(const std::string& client) const {
     return clients.contains(client);
@@ -50,7 +52,7 @@ class ComputerClub {
                                        time_point time) {
     const auto& [tableN, queueIt] = clients.find(client)->second;
     if (!tableN) {
-      queue.erase(queueIt);
+      if (queueIt != queue.end()) queue.erase(queueIt);
       clients.erase(client);
       return {};
     }
@@ -125,8 +127,8 @@ class ComputerClub {
                                                      // ->
                                                      // [tableNum,
                                                      // queue::iterator]
-  client_map clients;
-  std::list<std::string> queue;
+  client_map clients{};
+  std::list<std::string> queue{};
   std::vector<Table> tables;  // 0's table is dummy
   unsigned freeTables;
 };
