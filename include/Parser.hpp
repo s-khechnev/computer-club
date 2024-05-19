@@ -40,7 +40,7 @@ event::time_point parseTime(std::string_view str) {
 
 event::Id parseEventId(std::string_view str) {
   if (str == "1") return event::Id::Come;
-  if (str == "2") return event::Id::Seat;
+  if (str == "2") return event::Id::Sit;
   if (str == "3") return event::Id::Wait;
   if (str == "4") return event::Id::Left;
   throw std::runtime_error{"unknown event id"};
@@ -103,9 +103,9 @@ std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
               std::make_unique<event::Come>(time, std::move(clientName)));
           break;
         }
-        case event::Id::Seat: {
+        case event::Id::Sit: {
           unsigned tableNum = parsePositiveNum(std::string{*++itStr});
-          events.push_back(std::make_unique<event::Seat>(
+          events.push_back(std::make_unique<event::Sit>(
               time, std::move(clientName), tableNum));
           break;
         }

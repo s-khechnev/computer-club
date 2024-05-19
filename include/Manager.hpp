@@ -22,8 +22,8 @@ class Manager {
         case event::Id::Come:
           handleEvent(dynamic_cast<event::Come&>(*e));
           break;
-        case event::Id::Seat:
-          handleEvent(dynamic_cast<event::Seat&>(*e));
+        case event::Id::Sit:
+          handleEvent(dynamic_cast<event::Sit&>(*e));
           break;
         case event::Id::Wait:
           handleEvent(dynamic_cast<event::Wait&>(*e));
@@ -67,7 +67,7 @@ class Manager {
     club.addClient(event.getName());
   }
 
-  void handleEvent(event::Seat& event) {
+  void handleEvent(event::Sit& event) {
     std::cout << timeToStr(event.getTime()) << " " << event.getId() << " "
               << event.getName() << " " << event.getTableNum() << "\n";
     if (club.isTableBusy(event.getTableNum())) {

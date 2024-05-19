@@ -12,7 +12,7 @@ using time_point =
 
 enum class Id {
   Come = 1,
-  Seat,
+  Sit,
   Wait,
   Left,
 };
@@ -31,8 +31,8 @@ class Base {
   virtual ~Base() = default;
 
  protected:
-  Base(time_point time, Id id, const std::string& name)
-      : time(time), id(id), name(name) {}
+  Base(time_point time, Id id, std::string name)
+      : time(time), id(id), name(std::move(name)) {}
 
  private:
   const time_point time;
@@ -45,29 +45,31 @@ class BaseWithTableNum : public Base {
   unsigned getTableNum() const { return tableNum; }
 
  protected:
-  BaseWithTableNum(time_point time, Id id, const std::string& name,
-                   unsigned tableNum)
-      : Base(time, id, name), tableNum(tableNum) {}
+  BaseWithTableNum(time_point time, Id id, std::string name, unsigned tableNum)
+      : Base(time, id, std::move(name)), tableNum(tableNum) {}
 
  private:
   const unsigned tableNum;
 };
 
 struct Come final : public Base {
-  Come(time_point time, const std::string& name) : Base(time, Id::Come, name) {}
+  Come(time_point time, std::string name)
+      : Base(time, Id::Come, std::move(name)) {}
 };
 
-struct Seat final : public BaseWithTableNum {
-  Seat(time_point time, const std::string& name, unsigned tableNum)
-      : BaseWithTableNum(time, Id::Seat, name, tableNum) {}
+struct Sit final : public BaseWithTableNum {
+  Sit(time_point time, std::string name, unsigned tableNum)
+      : BaseWithTableNum(time, Id::Sit, std::move(name), tableNum) {}
 };
 
 struct Wait final : public Base {
-  Wait(time_point time, const std::string& name) : Base(time, Id::Wait, name) {}
+  Wait(time_point time, std::string name)
+      : Base(time, Id::Wait, std::move(name)) {}
 };
 
 struct Left final : public Base {
-  Left(time_point time, const std::string& name) : Base(time, Id::Left, name) {}
+  Left(time_point time, std::string name)
+      : Base(time, Id::Left, std::move(name)) {}
 };
 
 }  // namespace event
