@@ -5,6 +5,7 @@
 #include <exception>
 #include <fstream>
 #include <iomanip>
+#include <memory>
 #include <ranges>
 #include <stdexcept>
 #include <vector>
@@ -59,6 +60,38 @@ auto split(const std::string& line) {
          });
 }
 
+std::unique_ptr<event::Base> parseEvent(const std::string& line) {
+  auto strs = split(line);
+  auto itStr = std::ranges::begin(strs);
+
+  auto time = parseTime(*itStr);
+  auto eventId = parseEventId(*++itStr);
+
+  std::string clientName{*++itStr};
+  if (!validateClientName(clientName))
+    throw std::runtime_error{"invalid client name"};
+
+  switch (eventId) {
+    case event::Id::Come: {
+      return std::make_unique<event::Come>(time, std::move(clientName));
+    }
+    case event::Id::Sit: {
+      unsigned tableNum = parsePositiveNum(std::string{*++itStr});
+      return std::make_unique<event::Sit>(time, std::move(clientName),
+                                          tableNum);
+    }
+    case event::Id::Wait: {
+      return std::make_unique<event::Wait>(time, std::move(clientName));
+    }
+    case event::Id::Left: {
+      return std::make_unique<event::Left>(time, std::move(clientName));
+    }
+  }
+
+  if (++itStr != std::ranges::end(strs))
+    throw std::runtime_error{"invalid line"};
+}
+
 std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
     const std::string& filename) {
   std::ifstream istream{filename};
@@ -86,43 +119,17 @@ std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
     std::getline(istream, line);
     pricePerHour = parsePositiveNum(line);
 
+    std::getline(istream, line);
+    auto event = parseEvent(line);
+    auto prevTimePoint = event->getTime();
+    events.push_back(std::move(event));
     while (std::getline(istream, line)) {
-      strs = split(line);
-      itStr = std::ranges::begin(strs);
+      auto event = parseEvent(line);
+      if (event->getTime() < prevTimePoint)
+        throw std::runtime_error{"invalid event's order"};
+      prevTimePoint = event->getTime();
 
-      auto time = parseTime(*itStr);
-      auto eventId = parseEventId(*++itStr);
-
-      std::string clientName{*++itStr};
-      if (!validateClientName(clientName))
-        throw std::runtime_error{"invalid client name"};
-
-      switch (eventId) {
-        case event::Id::Come: {
-          events.push_back(
-              std::make_unique<event::Come>(time, std::move(clientName)));
-          break;
-        }
-        case event::Id::Sit: {
-          unsigned tableNum = parsePositiveNum(std::string{*++itStr});
-          events.push_back(std::make_unique<event::Sit>(
-              time, std::move(clientName), tableNum));
-          break;
-        }
-        case event::Id::Wait: {
-          events.push_back(
-              std::make_unique<event::Wait>(time, std::move(clientName)));
-          break;
-        }
-        case event::Id::Left: {
-          events.push_back(
-              std::make_unique<event::Left>(time, std::move(clientName)));
-          break;
-        }
-      }
-
-      if (++itStr != std::ranges::end(strs))
-        throw std::runtime_error{"invalid line"};
+      events.push_back(std::move(event));
     }
 
   } catch (const std::exception&) {
