@@ -117,20 +117,19 @@ class Manager {
   }
 
   void printClientLeft(event::time_point time, const std::string& name) {
-    constexpr int outId = 11;
-    std::cout << timeToStr(time) << " " << outId << " " << name << "\n";
+    std::cout << timeToStr(time) << " " << event::OutId::Left << " " << name
+              << "\n";
   }
 
   void printClientSitDown(event::time_point time, const std::string& name,
                           unsigned tableN) {
-    constexpr int outId = 12;
-    std::cout << timeToStr(time) << " " << outId << " " << name << " " << tableN
-              << "\n";
+    std::cout << timeToStr(time) << " " << event::OutId::Sit << " " << name
+              << " " << tableN << "\n";
   }
 
   void printError(event::time_point time, std::string error) {
-    constexpr int outId = 13;
-    std::cout << timeToStr(time) << " " << outId << " " << error << "\n";
+    std::cout << timeToStr(time) << " " << event::OutId::Error << " " << error
+              << "\n";
   }
 
  private:

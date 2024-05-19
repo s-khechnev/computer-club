@@ -10,6 +10,13 @@ namespace event {
 using time_point =
     std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
 
+enum class OutId { Left = 11, Sit, Error };
+
+std::ostream& operator<<(std::ostream& os, OutId id) {
+  os << static_cast<int>(id);
+  return os;
+}
+
 enum class Id {
   Come = 1,
   Sit,
