@@ -48,7 +48,7 @@ event::Id parseEventId(std::string_view str) {
 
 bool validateClientName(std::string_view str) {
   return std::all_of(str.begin(), str.end(), [](auto c) {
-    return std::islower(c) || std::isdigit(c) || c == '_';
+    return (c >= 'a' && c <= 'z') || std::isdigit(c) || c == '_';
   });
 }
 
