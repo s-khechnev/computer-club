@@ -87,6 +87,7 @@ class Manager {
       return;
     }
     if (club.getQueueSize() > club.getNumTables()) {
+      club.removeClient(event.getName(), event.getTime());
       printClientLeft(event.getName(), event.getTime());
       return;
     }
