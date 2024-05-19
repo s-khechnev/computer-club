@@ -42,7 +42,7 @@ class Manager {
     for (auto& [client, tableN] : clients) {
       if (club.isClientPlaying(client)) {
         club.releaseTable(client, tableN, club.getCloseTime());
-        printClientLeft(club.getCloseTime(), client);
+        printClientLeft(client, club.getCloseTime());
       }
     }
 
@@ -55,11 +55,11 @@ class Manager {
   void handleEvent(event::Come& event) {
     std::cout << event << "\n";
     if (club.containsClient(event.getName())) {
-      printError(event.getTime(), "YouShallNotPass");
+      printError("YouShallNotPass", event.getTime());
       return;
     }
     if (event.getTime() < club.getOpenTime()) {
-      printError(event.getTime(), "NotOpenYet");
+      printError("NotOpenYet", event.getTime());
       return;
     }
 
@@ -69,11 +69,11 @@ class Manager {
   void handleEvent(event::Sit& event) {
     std::cout << event << "\n";
     if (club.isTableBusy(event.getTableNum())) {
-      printError(event.getTime(), "PlaceIsBusy");
+      printError("PlaceIsBusy", event.getTime());
       return;
     }
     if (!club.containsClient(event.getName())) {
-      printError(event.getTime(), "ClientUnknown");
+      printError("ClientUnknown", event.getTime());
       return;
     }
 
@@ -84,11 +84,11 @@ class Manager {
   void handleEvent(event::Wait& event) {
     std::cout << event << "\n";
     if (club.getFreeTables() > 0) {
-      printError(event.getTime(), "ICanWaitNoLonger!");
+      printError("ICanWaitNoLonger!", event.getTime());
       return;
     }
     if (club.getQueueSize() > club.getNumTables()) {
-      printClientLeft(event.getTime(), event.getName());
+      printClientLeft(event.getName(), event.getTime());
       return;
     }
 
@@ -99,29 +99,29 @@ class Manager {
   void handleEvent(event::Left& event) {
     std::cout << event << "\n";
     if (!club.containsClient(event.getName())) {
-      printError(event.getTime(), "ClientUnknown");
+      printError("ClientUnknown", event.getTime());
       return;
     }
 
     unsigned tableN = club.removeClient(event.getName(), event.getTime());
     if (tableN != 0 && club.getQueueSize() != 0) {
       club.inviteWaiting(event.getName(), tableN, event.getTime());
-      printClientSitDown(event.getTime(), event.getName(), tableN);
+      printClientSitDown(event.getName(), tableN, event.getTime());
     }
   }
 
-  void printClientLeft(event::time_point time, const std::string& name) {
+  void printClientLeft(const std::string& name, event::time_point time) {
     std::cout << timeToStr(time) << " " << event::OutId::Left << " " << name
               << "\n";
   }
 
-  void printClientSitDown(event::time_point time, const std::string& name,
-                          unsigned tableN) {
+  void printClientSitDown(const std::string& name, unsigned tableN,
+                          event::time_point time) {
     std::cout << timeToStr(time) << " " << event::OutId::Sit << " " << name
               << " " << tableN << "\n";
   }
 
-  void printError(event::time_point time, std::string error) {
+  void printError(std::string error, event::time_point time) {
     std::cout << timeToStr(time) << " " << event::OutId::Error << " " << error
               << "\n";
   }
