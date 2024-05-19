@@ -90,7 +90,7 @@ class Manager {
       printError(event.getTime(), "ICanWaitNoLonger!");
       return;
     }
-    if (club.getQueueSize() > club.getTableNum()) {
+    if (club.getQueueSize() > club.getNumTables()) {
       printClientLeft(event.getTime(), event.getName());
       return;
     }

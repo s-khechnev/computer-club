@@ -4,12 +4,12 @@
 #include <cassert>
 #include <chrono>
 
+#include "Event.hpp"
 #include "Utils.hpp"
 
 class Table {
  public:
-  using time_point =
-      std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
+  using time_point = event::time_point;
 
   Table(unsigned pricePerHour) : pricePerHour(pricePerHour) {}
 

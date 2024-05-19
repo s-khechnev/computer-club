@@ -1,7 +1,6 @@
 #ifndef COMPUTERCLUB_HPP_
 #define COMPUTERCLUB_HPP_
 
-#include <chrono>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -13,8 +12,7 @@
 
 class ComputerClub {
  public:
-  using time_point =
-      std::chrono::time_point<std::chrono::system_clock, std::chrono::minutes>;
+  using time_point = event::time_point;
 
   ComputerClub() = default;
 
@@ -25,10 +23,10 @@ class ComputerClub {
         tables(tableNum + 1, Table{pricePerHour}),
         freeTables(tableNum) {}
 
-  unsigned getTableNum() const { return tables.size(); }
+  std::size_t getNumTables() const { return tables.size(); }
   time_point getOpenTime() const { return openTime; }
   time_point getCloseTime() const { return closeTime; }
-  unsigned getFreeTables() const { return freeTables; }
+  std::size_t getFreeTables() const { return freeTables; }
   std::size_t getQueueSize() const { return queue.size(); }
 
   bool isTableBusy(unsigned tableN) const { return tables[tableN].busy(); }
@@ -110,14 +108,14 @@ class ComputerClub {
  private:
   time_point openTime, closeTime;
 
-  using clients_map = std::unordered_map<
+  using client_map = std::unordered_map<
       std::string,
       std::pair<unsigned,
                 std::list<std::string>::iterator>>;  // "client name"
                                                      // ->
                                                      // [tableNum,
                                                      // queue::iterator]
-  clients_map clients;
+  client_map clients;
   std::list<std::string> queue;
   std::vector<Table> tables;
   unsigned freeTables;

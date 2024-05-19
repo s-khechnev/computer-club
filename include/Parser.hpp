@@ -122,7 +122,7 @@ std::pair<ComputerClub, std::vector<std::unique_ptr<event::Base>>> parse(
       }
 
       if (++itStr != std::ranges::end(strs))
-        throw std::runtime_error{"wrong line"};
+        throw std::runtime_error{"invalid line"};
     }
 
   } catch (const std::exception&) {
